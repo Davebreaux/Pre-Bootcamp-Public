@@ -5,22 +5,49 @@
     </div>
     <script type="text/javascript">
 	    var leftValue = 450, topValue = 100;
+		var walkValue = 1;
+		var direction = 'down'
 
     	function update(){
     		document.getElementById("character").style.left = leftValue+"px";
     		document.getElementById("character").style.top = topValue+"px";
+			document.getElementById("character").style.backgroundImage = 'url("img/'+direction+walkValue+'.png")'
     	}
 
     	document.onkeydown = function(e){
     		console.log(e);
+			if (walkValue == 1) {
+				walkValue = 2;
+			} else {
+				walkValue = 1;
+			}
     		if(e.keyCode == 37) { // LEFT
     			leftValue = leftValue - 10;
+				direction = 'left'
+				if (leftValue < 0) {
+					leftValue = 0;
+				}
     		}
     		else if (e.keyCode == 39) { // RIGHT
-    			leftValue = leftValue + 10;    		
+    			leftValue = leftValue + 10;  
+				direction = 'right' 
+				if (leftValue > 500) {
+					leftValue = 500;
+				}				
     		}
     		else if (e.keyCode == 40) { // DOWN
 				topValue = topValue + 10;
+				direction = 'down'
+				if (topValue > 500) {
+					topValue = 500;
+				}
+    		}
+			else if (e.keyCode == 38) { // up
+				topValue = topValue - 10;
+				direction = 'top'
+				if (topValue < 0) {
+					topValue = 0;
+				}
     		}
     		// ...
     		update();

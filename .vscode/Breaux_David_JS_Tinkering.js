@@ -1,7 +1,5 @@
-const childHeight = 48
-
-if (childHeight > 52) {
-    console.log('Get on that ride, kiddo!');
-} else {
-    console.log('Sorry kiddo. Maybe next year.')
+function findMax(arr) {
+    console.log(arr)
 }
+
+findMax([-3,3,5,7])

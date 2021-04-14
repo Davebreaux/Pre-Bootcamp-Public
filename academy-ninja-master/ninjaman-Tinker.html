@@ -1,0 +1,331 @@
+<html>
+    <head>
+        <title>NinjaMan2: The Nommening</title>
+        <style type="text/css">
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            .row {
+                line-height: 0;
+            }
+            .wall {
+                 background-color: blue;
+                 height: 40px;
+                 width: 40px;
+                 display: inline-block;
+            }
+            .sushi {
+                 background-image: url('img/sushi.png');
+                 background-color: black;
+                 height: 40px;
+                 width: 40px;
+                 display: inline-block;
+                 background-size: contain;
+            }
+            .onigiri {
+                background-image: url('img/onigiri.png');
+                background-color: black;
+                height: 40px;
+                 width: 40px;
+                 display: inline-block;
+                 background-size: contain;
+            }
+            .blank {
+                background-color: black;
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+            }
+            #ninjaman {
+                 background-image: url('img/ninja.gif');
+                 background-color: black;
+                 height: 40px;
+                 width: 40px;
+                 display: inline-block;
+                 background-size: contain;
+                 position: absolute;
+                 left: 40px;
+                 top: 40px;
+            }
+            #bluey {
+                 background-image: url('img/bluey.gif');
+                 height: 40px;
+                 width: 40px;
+                 display: inline-block;
+                 background-size: contain;
+                 position: absolute;
+                 left: 40px;
+                 top: 40px;
+            }
+            #scoreboard {
+                background-color: white;
+                background-size: contain;
+                height: 100px;
+                font-size: auto;
+                text-align: center;
+            }
+        </style>
+    </head>
+<body>
+    <div id='world'></div>
+    <div id="ninjaman"></div>
+    <div id='bluey'></div>
+    <div id="scoreboard"></div>
+</body>
+<script type="text/javascript">
+    var score = 0;
+    var lives = 3;
+    var world = []
+    function randomNum(n) {
+        var randNum = (Math.floor(Math.random() * n));
+        return randNum; 
+    }
+
+    function createWorld(h,w) {
+        for (var i = 0; i < h; i++) {
+            world.push([]);
+            for (var j =0; j < w; j++) {
+                world[i].push(1);
+            }
+        }for (var borderH = 0; borderH < h; borderH++) {
+            for (var borderV = 0; borderV < w; borderV++) {
+                if (borderV == 0 || borderV == world.length-1) {
+                    world[borderH][borderV] = 1;
+                }
+                if (borderH == 0 || borderH == world.length-1) {
+                    for (borderV2 = 0; borderV2 < w; borderV2++) {
+                        world[borderH][borderV2] = 1;
+                    }
+                }
+            }   
+        }
+    }
+    createWorld(10,10);
+
+    function fillWorld() {
+        var y = 1;
+        var x = 1;
+
+        function randomFill() {
+            var r = randomNum(4);
+            while (r == 1) {
+                r = randomNum(4);
+            }
+            return r;
+        }
+        
+        for (var i =0; i < ((world.length) * (world[0].length)*2); i++) {
+            var n = randomNum(4);
+            switch (n) {
+                case 0:
+                    y -= 1;
+                    if (y == 0) {
+                        y = 1;
+                        i--
+                    }
+
+                    break;
+                
+                case 1:
+                    y += 1;
+                    if (y == world.length-1) {
+                        y = world.length-2;
+                        i--
+                    }
+                    break;
+                    
+                case 2:
+                    x += 1;
+                    if (x == world[0].length-1) {
+                        x = world[0].length-2;
+                        i--
+                    }
+                    break;
+                
+                case 3:
+                    x -= 1;
+                    if (x == 0) {
+                        x = 1;
+                        i--
+                    }
+                    break;
+                default:
+                    break;
+            }
+            world[y][x] = randomFill()
+        }
+        world[1][1] = 0;
+    }
+    fillWorld();
+
+    var worldDict = {
+        0: 'blank',
+        1: 'wall',
+        2: 'sushi',
+        3: 'onigiri'
+    }
+
+    function drawWorld() {
+        output = "";
+        
+        for (var row = 0; row < world.length; row++) {
+            output += "<div class = 'row'></div>"
+            for (var x = 0; x < world[row].length; x++){
+                output += "<div class = '"+worldDict[world[row][x]]+"'></div>"
+            }
+        }
+
+        document.getElementById('world').innerHTML = output;
+    }
+    drawWorld();
+
+    function drawScore() {
+        document.getElementById('scoreboard').style.width = (world[0].length * 40);
+        document.getElementById('scoreboard').textContent = `SCORE: ${score}  // LIVES: ${lives}`;
+    }
+    drawScore();
+
+    var xAxis = 1;
+    var yAxis = 1;
+    var xAxisBlue = (randomNum(world.length-2)+1);
+    var yAxisBlue = (randomNum(world[0].length-2)+1);
+    var ghosts = [pinky]
+    var ghostAxis = {
+        pinkyX: (randomNum(world.length-2)+1),
+        pinkyY: (randomNum(world[0].length-2)+1),
+    }
+    
+    function drawNinja() {
+        document.getElementById("ninjaman").style.left = xAxis*40+'px';
+        document.getElementById("ninjaman").style.top = yAxis*40+'px';
+    }
+
+    var isStart = true
+    var ghostStart = true
+    function drawBluey() {
+        if (isStart == true) {
+            while (world[yAxisBlue][xAxisBlue] == 1) {
+                xAxisBlue = (randomNum(world.length-2)+1);
+                yAxisBlue = (randomNum(world[0].length-2)+1);
+            }
+        }
+        document.getElementById("bluey").style.left = xAxisBlue*40+'px';
+        document.getElementById("bluey").style.top = yAxisBlue*40+'px';
+        isStart = false;
+    }
+    drawBluey();
+
+    function drawGhosts(color) {
+        if (isStart == true) {
+            while (world[yAxisBlue][xAxisBlue] == 1) {
+                xAxisBlue = (randomNum(world.length-2)+1);
+                yAxisBlue = (randomNum(world[0].length-2)+1);
+            }
+        }
+        document.getElementById("bluey").style.left = xAxisBlue*40+'px';
+        document.getElementById("bluey").style.top = yAxisBlue*40+'px';
+        isStart = false;
+    }
+    drawBluey();
+
+    function moveBluey() {
+        function moveX() {
+            if (xAxisBlue > xAxis && world[yAxisBlue][xAxisBlue-1] != 1) {
+                        xAxisBlue--;
+                    } else if (xAxisBlue < xAxis && world[yAxisBlue][xAxisBlue+1] != 1) {
+                        xAxisBlue++;
+                    }
+        }
+        function moveY() {
+            if (yAxisBlue > yAxis && world[yAxisBlue-1][xAxisBlue] != 1) {
+                        yAxisBlue--;
+                    } else if (yAxisBlue < yAxis && world[yAxisBlue+1][xAxisBlue] != 1) {
+                        yAxisBlue++;
+                    }
+        }
+        if (xAxisBlue != xAxis && yAxisBlue != yAxis) {
+            var direction = randomNum(2);
+            switch (direction) {
+                case 0:
+                    moveX();
+                    break;
+                case 1:
+                    moveY();
+                    break;
+                default:
+                    break;
+            }
+        } else if (xAxisBlue != xAxis) {
+            moveX();
+        } else if (yAxisBlue != yAxis) {
+            moveY();
+        }
+        drawBluey();
+    }
+
+
+    document.onkeydown = function(e){ 
+        
+        if (e.keyCode == 37) { 
+            if (world[yAxis][xAxis-1] != 1) {
+                xAxis = xAxis - 1;
+                    if (xAxis < 0) {
+                        xAxis = world[0].length-1;
+                    }
+            }
+            moveBluey();
+        } else if (e.keyCode == 39) {
+            if (world[yAxis][xAxis+1] != 1) {
+                xAxis = xAxis + 1;
+                    if (xAxis > world[0].length-1) {
+                        xAxis = 0;
+                    }
+            }
+            moveBluey();
+        } else if (e.keyCode == 40) {
+            if (world[yAxis+1][xAxis] != 1) {
+                yAxis = yAxis + 1;
+                    if (yAxis > world.length-1) {
+                        yAxis = 0;
+                    }
+            }
+            moveBluey();
+        } else if (e.keyCode == 38) {
+            if (world[yAxis-1][xAxis] != 1) {
+                yAxis = yAxis - 1;
+                    if (yAxis > world.length-1) {
+                        yAxis = 0;
+                    }
+            }
+            moveBluey();
+        }
+        
+        drawNinja();
+        nom();
+        drawWorld();
+        if (yAxis == yAxisBlue && xAxis == xAxisBlue) {
+            lives--; yAxis=1; xAxis=1;
+            drawNinja();
+            drawScore();
+            if (lives == 0) {
+                alert(`GAME OVER! Your score was ${score}`);
+                location.reload()
+            }
+        }
+    }
+
+    function nom() {
+        if (world[yAxis][xAxis] == 2) {
+            world[yAxis][xAxis] = 0;
+            score += 1;
+        }
+        if (world[yAxis][xAxis] == 3) {
+            world[yAxis][xAxis] = 0;
+            score += 5;
+        }
+        drawScore()
+    }
+</script>
+
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<style type="text/css">
+		#sky {
+			background-image: url("sky.jpg");
+			width: 900px;
+			height: 700px;
+		}
+		.player {
+			background-image: url("fighter.png");
+			width: 70px;
+			height: 90px;
+			position: absolute;
+		}
+		.enemy {
+			background-image: url("enemy.png");
+			width: 70px;
+			height: 93px;
+			position: absolute;
+		}
+		.missile {
+			background-image: url("missile.png");
+			width: 10px;
+			height: 23px;
+			position: absolute;
+		}
+		.eMissile {
+			background-image: url("eMissile.png");
+			width: 10px;
+			height: 23px;
+			position: absolute;
+		}
+		.explosion {
+			background-image: url("explosion.gif");
+			width: 70px;
+			height: 98px;
+			position: absolute;
+		}
+		
+	</style>
+	<div id="sky">
+		<div id="players"></div>
+		<div id="enemies"></div>
+		<div id="missiles"></div>
+		<div id="eMissiles"></div>
+		<div id="explosions"></div>
+	</div>
+
+
+
+	<script type="text/javascript">
+
+	var difficulty = 1;
+	var score = 0;
+	var pause = false
+	
+	var player = {
+		left: 450,
+		top: 620
+	}
+
+	var enemies = []
+
+	var missiles = []
+
+	var eMissiles = []
+
+	var explosions = []
+
+	function randNum(n) {
+		return Math.floor(Math.random() * n);
+	}
+
+	function enemyNumbers() {
+		while (enemies.length < Math.floor(difficulty*5)) {
+			createEnemy();
+		}
+	}
+
+	function moveEnemies() {
+		for (var i=0; i<enemies.length; i++) {
+			enemies[i].top += 0.1;
+			if (enemies[i].top >= 600) {
+				enemies.splice(i,1);
+				score--;
+			}
+		}
+
+	}
+	function drawExplosion() {
+		content = ""
+		for (var i=0;i<explosions.length;i++) {
+			content += "<div class='explosion' style='left: "+explosions[i].left+"px; top: "+explosions[i].top+"px;'></div>"
+		}
+		document.getElementById("explosions").innerHTML = content;
+	}
+
+
+	function drawPlayer() {
+		content = ""
+		content = "<div class='player' style='left: "+player.left+"px; top: "+player.top+"px;'></div>"
+		document.getElementById("players").innerHTML = content;
+	}
+
+	function drawEnemies() {
+		content = ""
+		for (var i=0;i<enemies.length;i++) {
+			content += "<div class='enemy' style='left: "+enemies[i].left+"px; top: "+enemies[i].top+"px;'></div>"
+		}
+		document.getElementById("enemies").innerHTML = content;
+	}
+
+	function createEnemy() {
+		var leftPos = randNum(840)
+		enemies.push({left: leftPos, top: -80, shots: 1})
+	}
+
+	function drawMissiles() {
+		content = ""
+		for (var i=0;i<missiles.length;i++) {
+			content += "<div class='missile' style='left: "+missiles[i].left+"px; top: "+missiles[i].top+"px;'></div>"
+		}
+		document.getElementById("missiles").innerHTML = content;
+	}
+
+	function drawEMissiles() {
+		content = ""
+		for (var i=0;i<eMissiles.length;i++) {
+			content += "<div class='eMissile' style='left: "+eMissiles[i].left+"px; top: "+eMissiles[i].top+"px;'></div>"
+		}
+		document.getElementById("eMissiles").innerHTML = content;
+	}
+
+	function enemyHit() {
+		for (var m=0; m<missiles.length; m++) {
+			for (var e=0; e<enemies.length; e++) {
+				if (missiles[m] != undefined && Math.abs(missiles[m].top - enemies[e].top) < 60 && Math.abs(missiles[m].left - (enemies[e].left+35)) < 34) {
+					missiles.splice(m,1);
+					createExplosion(enemies[e].left,enemies[e].top)
+					enemies.splice(e,1);
+					score++;
+					difficulty += 0.01;
+				}
+			}
+		}
+	}
+
+	function playerHit() {
+		for (var m=0; m<eMissiles.length; m++) {
+			if (eMissiles[m] != undefined && Math.abs(eMissiles[m].top - player.top) < 23 && Math.abs(eMissiles[m].left - (player.left+35)) < 34) {
+				eMissiles = []; missiles = [];
+				createExplosion(player.left,player.top)
+				player = [];
+				death();
+			}
+		}
+	}
+
+	function createExplosion(l,t) {
+		explosions.push({left: l, top: t});
+		drawExplosion();
+		setTimeout(function(){explosions.shift(); drawExplosion()}, 700);
+	}
+
+	function moveAllMissiles() {
+		for (var i=0;i<missiles.length;i++) {
+			missiles[i].top -= 1;
+			if (missiles[i].top <= 0) {
+				missiles.splice(i,1)
+			}
+		}
+		for (var j=0;j<eMissiles.length;j++) {
+			eMissiles[j].top += 1;
+			if (eMissiles[j].top >= 690) {
+				eMissiles.splice(j,1)
+			}
+		}
+	}
+
+	function pew() {
+		missiles.push({left: (player.left+30), top: (player.top-12)})
+	}
+
+	function enemyPew() {
+		
+		for (var i=0; i<enemies.length; i++) {
+			enemies[i].shots += randNum(2);
+			if ((enemies[i].shots * difficulty)>500) {
+				eMissiles.push({left: (enemies[i].left+30), top: (enemies[i].top+75)})
+				enemies[i].shots = 0;
+			}
+			
+		}
+	}
+
+	function death() {
+		var remPlay = document.getElementById('players');
+		remPlay.removeChild(remPlay.childNodes[0]);
+		enemies = [];
+		pause = true;
+		player = {left: 450,top: 620};
+		setTimeout(function(){alert('You have died.'); pause = false;},500)
+	}
+
+	document.onkeydown = function(e) {
+		if (pause == false) {
+			if (e. keyCode == 37 && player.left-10 >= 0) {player.left -= 10};
+			if (e.keyCode == 39 && player.left+10 <= 840) {player.left += 10};
+			if (e.keyCode == 38 && player.top-10 >= 480) {player.top -= 10};
+			if (e.keyCode == 40 && player.top+10 <= 620) {player.top += 10};
+			if (e.keyCode == 32) {pew(); drawMissiles();}
+			drawPlayer(); 
+			//console.log(e);
+		}
+	}
+
+	function gameLoop() {
+		if (pause == false) {
+			enemyNumbers();
+			drawPlayer();
+			moveAllMissiles();
+			drawMissiles();
+			drawEMissiles();
+			moveEnemies();
+			drawEnemies();
+			enemyPew();
+			enemyHit();
+			playerHit();
+		}
+		setTimeout(gameLoop, 1);
+	}
+	gameLoop()
+
+
+	</script>
+</body>
+</html>
